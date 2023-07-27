@@ -17,9 +17,6 @@ DEBUG = bool(strtobool(os.getenv("DEBUG", "False")))
 
 ALLOWED_HOSTS = [os.getenv("SERVER_HOST", "localhost"), "127.0.0.1"]
 
-
-# Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -27,6 +24,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "deals",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -86,13 +85,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
 
-USE_TZ = True
-
 STATIC_URL = "/static/"
+
+AUTH_USER_MODEL = "users.User"
