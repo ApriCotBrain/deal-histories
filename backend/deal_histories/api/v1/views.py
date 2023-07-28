@@ -21,9 +21,20 @@ class FileUploadView(APIView):
 
         try:
             data_frame = pandas.read_csv(csv_file)
+        except pandas.errors.EmptyDataError:
+            return Response(
+                {"error": "Empty file"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except pandas.errors.ParserError:
             return Response(
-                {"error": "Invalid format"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid format"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as error:
+            return Response(
+                {"error": error},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         existing_users = {user.username: user for user in User.objects.all()}
