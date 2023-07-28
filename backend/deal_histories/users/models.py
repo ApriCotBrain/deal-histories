@@ -1,10 +1,9 @@
-"""Database settings of the 'Deals' application."""
+"""Database settings of the 'users' application."""
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from core.enums import Limits
-from deals.models import Gem
 
 
 class User(AbstractUser):
@@ -17,17 +16,11 @@ class User(AbstractUser):
         help_text="The spent money for the entire period",
         default=Limits.USER_SPENT_MONEY_VALUE,
     )
-    gems = models.ManyToManyField(
-        Gem,
-        verbose_name="gems",
-        help_text="User's gems",
-        related_name="users",
-    )
 
     class Meta:
-        ordering = ("username",)
         verbose_name = "user"
         verbose_name_plural = "users"
+        ordering = ("username",)
 
     def __str__(self):
         return self.username
