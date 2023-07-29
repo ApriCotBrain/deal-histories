@@ -1,5 +1,5 @@
 import pandas
-from django.db.models import Count
+from django.db.models import Count, F
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,75 +23,51 @@ class FileUploadView(APIView):
             data_frame = pandas.read_csv(csv_file)
         except pandas.errors.EmptyDataError:
             return Response(
-                {"error": "Empty file"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Empty file"}, status=status.HTTP_400_BAD_REQUEST
             )
         except pandas.errors.ParserError:
             return Response(
-                {"error": "Invalid format"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid format"}, status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as error:
             return Response(
-                {"error": error},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": error}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        existing_users = {user.username: user for user in User.objects.all()}
-        existing_gems = {gem.name: gem for gem in Gem.objects.all()}
-
-        users_to_create = []
-        gems_to_create = []
-
         for index, row in data_frame.iterrows():
-            username = row["customer"]
+            user, user_created = User.objects.get_or_create(
+                username=row["customer"],
+            )
+            if not user_created:
+                user.spent_money = F("spent_money") + row["total"]
+                user.save()
 
-            if username not in existing_users:
-                new_user = User(username=username)
-                existing_users[username] = new_user
-                users_to_create.append(new_user)
-            else:
-                existing_users[username].spent_money += row["total"]
-
-            item_name = row["item"]
-
-            if item_name not in existing_gems:
-                new_gem = Gem(name=item_name)
-                existing_gems[item_name] = new_gem
-                gems_to_create.append(new_gem)
-
-            existing_users[username].save()
-            existing_gems[item_name].user.add(existing_users[username])
-
-        User.objects.bulk_update(
-            list(existing_users.values()), ["spent_money"]
-        )
-        User.objects.bulk_create(users_to_create)
-        Gem.objects.bulk_create(gems_to_create)
+            gem, gem_created = Gem.objects.get_or_create(name=row["item"])
+            user.gems.add(gem)
 
         return Response(status=status.HTTP_200_OK)
 
 
 class TopSpendingCustomerView(APIView):
-    def get(self, request, format=None):
-        top_five_customers = User.objects.all().order_by("-spent_money")[
+    def get(self, request):
+        top_five_customers = User.objects.order_by("-spent_money")[
             : Limits.TOP_CUSTOMER_VALUE_LIMIT
         ]
-        gems_list = (
+
+        gems = (
             Gem.objects.filter(user__in=top_five_customers)
-            .values("name")
-            .annotate(count=Count("name"))
+            .annotate(count=Count("user"))
             .filter(count__gte=Limits.MIN_GEMS_VALUE)
         )
-        gems_list = [gem["name"] for gem in gems_list]
-
         response_data = [
             {
-                "username": user.username,
-                "spent_money": user.spent_money,
-                "gems": gems_list,
+                "username": customer.username,
+                "spent_money": customer.spent_money,
+                "gems": [
+                    gem.name for gem in gems if customer in gem.user.all()
+                ],
             }
-            for user in top_five_customers
+            for customer in top_five_customers
         ]
 
         return Response({"response": response_data})
