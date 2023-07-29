@@ -1,8 +1,8 @@
-"""Representation of the 'gems' app models in the admin panel."""
+"""Representation of the 'deals' app models in the admin panel."""
 
 from django.contrib import admin
 
-from gems.models import File, Gem, Deal
+from deals.models import File, Gem, Deal
 
 
 @admin.register(Gem)

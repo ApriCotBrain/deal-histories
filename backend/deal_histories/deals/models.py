@@ -1,10 +1,12 @@
 """Database settings of the 'deals' application."""
 
-from django.conf import settings
-from django.core.validators import RegexValidator
+from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models
 
 from core.enums import Limits, Regex
+
+User = get_user_model()
 
 
 class Gem(models.Model):
@@ -15,7 +17,7 @@ class Gem(models.Model):
         help_text="Gem",
         max_length=Limits.GEM_NAME_MAX_CHAR,
         unique=True,
-        validators=(RegexValidator(Regex.GEM_NAME),),
+        validators=(RegexValidator(Regex.GEM_NAME_REGEX),),
     )
 
     class Meta:
@@ -28,18 +30,31 @@ class Gem(models.Model):
 
 
 class File(models.Model):
-    file = models.FileField(upload_to="csv/")
+    """Model Deal."""
+
+    file = models.FileField(
+        "file",
+        help_text="Uploaded file",
+        upload_to="csv/",
+        validators=(FileExtensionValidator(("csv",)),),
+    )
+
+    class Meta:
+        verbose_name = "file"
+        verbose_name_plural = "files"
 
 
 class Deal(models.Model):
     """Model Deal."""
 
     file = models.ForeignKey(
-        File, related_name="deals", on_delete=models.PROTECT
+        File,
+        help_text="Uploaded file",
+        related_name="deals",
+        on_delete=models.PROTECT,
     )
-
     user = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
+        User,
         verbose_name="user",
         help_text="Customer of the deal",
         related_name="deals",
@@ -47,15 +62,12 @@ class Deal(models.Model):
     item = models.ManyToManyField(
         Gem,
         verbose_name="item",
-        help_text="Deal stone",
+        help_text="Deal's gems",
         related_name="deals",
     )
     total = models.PositiveIntegerField(
         "total",
         help_text="The total cost of the deal",
-        default=Limits.DEAL_TOTAL_DEFAULT_VALUE,
-        blank=True,
-        null=True,
     )
 
     class Meta:
@@ -63,4 +75,4 @@ class Deal(models.Model):
         verbose_name_plural = "deals"
 
     def __str__(self):
-        return f"Purchase of a {self.item} by a {self.user}"
+        return self.total

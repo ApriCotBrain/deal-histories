@@ -2,11 +2,8 @@
 
 from django.urls import path
 
-from api.v1.views import (
-    FileUploadView,
-    # FileDetailsView,
-    TopSpendingCustomerView,
-)
+from api.v1.views import FileUploadView, TopSpendingCustomerView
+
 
 urlpatterns = [
     path("upload-csv-file/", FileUploadView.as_view(), name="upload-csv-file"),
@@ -15,5 +12,4 @@ urlpatterns = [
         TopSpendingCustomerView.as_view(),
         name="top-customers",
     ),
-    # path("file_detail/<int:id>/", FileDetailsView.as_view(), name="file_detail"),
 ]

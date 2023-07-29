@@ -1,11 +1,12 @@
-from rest_framework import serializers
-from django.core.validators import FileExtensionValidator
+"""Serializers of the 'Api' application v1."""
 
-from gems.models import File
+from rest_framework import serializers
+
+from deals.models import File
 
 
 class FileSerializer(serializers.ModelSerializer):
-    # file = serializers.FileField(validators=(FileExtensionValidator(["csv"]),))
+    """Serializer for file processing."""
 
     class Meta:
         fields = ("id", "file")
