@@ -8,6 +8,8 @@ class Limits(IntEnum):
     USER_SPENT_MONEY_VALUE = 0
     TOP_CUSTOMER_VALUE_LIMIT = 5
     MIN_GEMS_VALUE = 2
+    DEAL_TOTAL_DEFAULT_VALUE = 0
+    DEAL_QUANTITY_DEFAULT_VALUE = 1
 
 
 class Regex(StrEnum):

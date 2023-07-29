@@ -17,12 +17,6 @@ class Gem(models.Model):
         unique=True,
         validators=(RegexValidator(Regex.GEM_NAME),),
     )
-    user = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        verbose_name="user",
-        help_text="The owner of the gem",
-        related_name="gems",
-    )
 
     class Meta:
         verbose_name = "gem"
@@ -31,3 +25,42 @@ class Gem(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class File(models.Model):
+    file = models.FileField(upload_to="csv/")
+
+
+class Deal(models.Model):
+    """Model Deal."""
+
+    file = models.ForeignKey(
+        File, related_name="deals", on_delete=models.PROTECT
+    )
+
+    user = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        verbose_name="user",
+        help_text="Customer of the deal",
+        related_name="deals",
+    )
+    item = models.ManyToManyField(
+        Gem,
+        verbose_name="item",
+        help_text="Deal stone",
+        related_name="deals",
+    )
+    total = models.PositiveIntegerField(
+        "total",
+        help_text="The total cost of the deal",
+        default=Limits.DEAL_TOTAL_DEFAULT_VALUE,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = "deal"
+        verbose_name_plural = "deals"
+
+    def __str__(self):
+        return f"Purchase of a {self.item} by a {self.user}"

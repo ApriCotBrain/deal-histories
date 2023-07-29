@@ -2,11 +2,25 @@
 
 from django.contrib import admin
 
-from gems.models import Gem
+from gems.models import File, Gem, Deal
 
 
 @admin.register(Gem)
 class GemAdmin(admin.ModelAdmin):
-    """Representation of the User model in the admin panel."""
+    """Representation of the Gem model in the admin panel."""
 
     list_display = ("name",)
+
+
+@admin.register(Deal)
+class DealAdmin(admin.ModelAdmin):
+    """Representation of the Deal model in the admin panel."""
+
+    list_display = ("id", "total", "file")
+
+
+@admin.register(File)
+class FileAdmin(admin.ModelAdmin):
+    """Representation of the File model in the admin panel."""
+
+    list_display = ("id",)

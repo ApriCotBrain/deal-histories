@@ -9,7 +9,4 @@ from users.models import User
 class UserAdmin(admin.ModelAdmin):
     """Representation of the User model in the admin panel."""
 
-    list_display = (
-        "username",
-        "spent_money",
-    )
+    list_display = ("username",)
